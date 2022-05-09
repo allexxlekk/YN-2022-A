@@ -2,6 +2,8 @@
 
 import re
 import numpy as np
+from keras.preprocessing.text import one_hot
+from keras.preprocessing.sequence import pad_sequences
 
 # Functions that produce:
 
@@ -45,3 +47,35 @@ def get_dataset(filename):
     X = np.array(x)
     Y = np.array(y)
     return [X, Y]
+
+
+# Word Embedding Section
+
+
+def get_input_vector_E(data):
+    """Converts line into a sentence."""
+    tmp_line = re.sub("<[0-9]*>", "", data)
+    return re.sub(" +", " ", tmp_line).strip()
+
+
+# Training or Testing Dataset w/ word embedding.
+def get_dataset_E(filename):
+    """Returns created one hot encoded input vectors with padding, output vectors from a file."""
+    X = []
+    y = []
+
+    with open(filename, "r") as f:
+        for line in f:
+            line = line.split(",")
+            X.append(get_input_vector_E(line[0]))
+            y.append(get_output_vector(line[1]))
+
+        padding_size = 0
+        # Get the padding size and represent sentences as one hot encoded words based on vocabulary size.
+        for sentence in X:
+            no_words = len(sentence.split())
+            if no_words > padding_size:
+                padding_size = no_words
+
+    Y = np.array(y)
+    return [X, Y, padding_size]
